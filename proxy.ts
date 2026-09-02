@@ -1,4 +1,49 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-export function proxy(request:NextRequest){const token=request.cookies.get('accessToken')?.value;const path=request.nextUrl.pathname;const protectedPath=path==='/onboarding'||path.startsWith('/dashboard');const authPage=path==='/login'||path==='/register';if(protectedPath&&!token)return NextResponse.redirect(new URL('/login',request.url));if(authPage&&token)return NextResponse.redirect(new URL('/onboarding',request.url));return NextResponse.next()}
-export const config={matcher:['/login','/register','/onboarding','/dashboard/:path*']}
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  const accessToken =
+    request.cookies.get("accessToken")?.value;
+
+  const isAuthPage =
+    path === "/auth/login" ||
+    path === "/auth/register";
+
+  const isHomePage = path === "/";
+
+  /*
+   * Logged-in user visiting login/register/home
+   */
+  if (
+    accessToken &&
+    (isAuthPage || isHomePage)
+  ) {
+    return NextResponse.redirect(
+      new URL("/onboarding", request.url)
+    );
+  }
+
+  /*
+   * Protected routes without access token
+   */
+  if (
+    !accessToken &&
+    !isAuthPage &&
+    !isHomePage
+  ) {
+    return NextResponse.redirect(
+      new URL("/auth/login", request.url)
+    );
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    "/",
+      "/auth/:path*",
+  ],
+};

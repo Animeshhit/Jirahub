@@ -1,3 +1,187 @@
-'use client'
-import { useState } from 'react'; import { useRouter } from 'next/navigation'; import type { Invite, User } from '@/lib/types'
-export function Onboarding({user,invites}:{user:User|null;invites:Invite[]}){const router=useRouter();const [modal,setModal]=useState<'create'|'join'|null>(null);const [name,setName]=useState('');const [error,setError]=useState('');const [loading,setLoading]=useState(false);const act=async(path:string,body?:unknown)=>{setLoading(true);setError('');const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:body?JSON.stringify(body):undefined});if(!r.ok){setError((await r.text())||'Something went wrong');setLoading(false);return}router.push('/dashboard');router.refresh()};return <main className="min-h-screen px-6 py-8 sm:px-10 lg:px-16"><header className="flex items-center justify-between"><div className="text-2xl font-semibold tracking-tight">JiraHub</div><span className="text-sm text-muted-foreground">{user?.name||'Welcome'}</span></header><section className="mx-auto flex max-w-5xl flex-col items-center py-20 text-center"><div aria-label="JiraHub mark" className="float mb-10 flex size-32 rotate-3 items-center justify-center rounded-[28px] bg-[#213183] text-6xl font-black text-white shadow-xl"><span className="-translate-y-1">J</span></div><p className="text-sm font-semibold uppercase tracking-[.16em] text-primary">One more thing</p><h1 className="mt-4 text-balance text-5xl font-bold tracking-[-.06em] sm:text-6xl">Let&apos;s get you set up.</h1><p className="mt-5 max-w-lg text-pretty leading-7 text-muted-foreground">Create a workspace for your team, or join one you&apos;ve been invited to.</p><div className="mt-12 grid w-full gap-4 md:grid-cols-2"><button onClick={()=>setModal('create')} className="paper-card p-8 text-left transition hover:-translate-y-1 hover:shadow-lg"><span className="mb-12 block text-4xl">＋</span><h2 className="text-2xl font-semibold tracking-tight">Create a Workspace</h2><p className="mt-2 leading-6 text-muted-foreground">Start fresh and invite your team.</p></button><button onClick={()=>setModal('join')} className="paper-card p-8 text-left transition hover:-translate-y-1 hover:shadow-lg"><span className="mb-12 block text-4xl">↗</span><h2 className="text-2xl font-semibold tracking-tight">Join a Workspace</h2><p className="mt-2 leading-6 text-muted-foreground">Accept an invitation from a teammate.</p></button></div>{invites.length>0&&<div className="mt-10 w-full text-left"><h2 className="mb-4 text-xl font-semibold">Your invitations</h2><div className="flex flex-col gap-3">{invites.map(i=><div key={i.id} className="paper-card flex flex-wrap items-center justify-between gap-4 p-5"><div><p className="font-medium">{i.workspaceName||i.workspace?.name||'Workspace invitation'}</p><p className="text-sm text-muted-foreground">Invited by {i.inviterName||'a teammate'}</p></div><div className="flex gap-2"><button onClick={()=>act(`/api/invites/${i.id}/accept`)} className="rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground">Accept</button><button onClick={()=>act(`/api/invites/${i.id}/decline`)} className="rounded-full border px-4 py-2 text-sm">Decline</button></div></div>)}</div></div>}</section>{modal&&<div role="dialog" aria-modal="true" className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"><div className="paper-card w-full max-w-md p-6"><div className="flex items-center justify-between"><h2 className="text-2xl font-semibold">{modal==='create'?'Create a workspace':'Join a workspace'}</h2><button onClick={()=>setModal(null)} aria-label="Close" className="text-2xl">×</button></div>{modal==='create'?<><label className="mt-6 flex flex-col gap-2 text-sm font-medium">Workspace name<input autoFocus className="auth-input" value={name} onChange={e=>setName(e.target.value)} placeholder="Acme, Inc."/></label><button disabled={!name||loading} onClick={()=>act('/api/workspace',{name})} className="mt-6 min-h-12 w-full rounded-full bg-primary text-primary-foreground disabled:opacity-50">{loading?'Creating…':'Create workspace'}</button></>:<div className="mt-6"><p className="leading-6 text-muted-foreground">{invites.length?'Choose an invitation above to join your team.':'No invites yet — ask a teammate to invite you, or create your own workspace.'}</p><button onClick={()=>setModal(null)} className="mt-6 min-h-12 w-full rounded-full border">Close</button></div>}{error&&<p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}</div></div>}</main>}
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { Invite, User } from "@/lib/types";
+export function Onboarding({
+  user,
+  invites,
+}: {
+  user: User | null;
+  invites: Invite[];
+}) {
+  const router = useRouter();
+  const [modal, setModal] = useState<"create" | "join" | null>(null);
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const act = async (path: string, body?: unknown) => {
+    setLoading(true);
+    setError("");
+    const r = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!r.ok) {
+      setError((await r.text()) || "Something went wrong");
+      setLoading(false);
+      return;
+    }
+    router.push("/dashboard");
+    router.refresh();
+  };
+  return (
+    <main className="min-h-screen px-6 py-8 sm:px-10 lg:px-16">
+      <header className="flex items-center justify-between">
+        <div className="text-2xl font-semibold tracking-tight">JiraHub</div>
+        <span className="text-sm text-muted-foreground">
+          {user?.name || "Welcome"}
+        </span>
+      </header>
+      <section className="mx-auto flex max-w-5xl flex-col items-center py-20 text-center">
+        <div
+          aria-label="JiraHub mark"
+          className="float mb-10 flex size-32 rotate-3 items-center justify-center rounded-[28px] bg-[#213183] text-6xl font-black text-white shadow-xl"
+        >
+          <span className="-translate-y-1">J</span>
+        </div>
+        <p className="text-sm font-semibold uppercase tracking-[.16em] text-primary">
+          One more thing
+        </p>
+        <h1 className="mt-4 text-balance text-5xl font-bold tracking-[-.06em] sm:text-6xl">
+          Let&apos;s get you set up.
+        </h1>
+        <p className="mt-5 max-w-lg text-pretty leading-7 text-muted-foreground">
+          Create a workspace for your team, or join one you&apos;ve been invited
+          to.
+        </p>
+        <div className="mt-12 grid w-full gap-4 md:grid-cols-2">
+          <button
+            onClick={() => setModal("create")}
+            className="paper-card p-8 text-left transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <span className="mb-12 block text-4xl">＋</span>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Create a Workspace
+            </h2>
+            <p className="mt-2 leading-6 text-muted-foreground">
+              Start fresh and invite your team.
+            </p>
+          </button>
+          <button
+            onClick={() => setModal("join")}
+            className="paper-card p-8 text-left transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <span className="mb-12 block text-4xl">↗</span>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Join a Workspace
+            </h2>
+            <p className="mt-2 leading-6 text-muted-foreground">
+              Accept an invitation from a teammate.
+            </p>
+          </button>
+        </div>
+        {invites.length > 0 && (
+          <div className="mt-10 w-full text-left">
+            <h2 className="mb-4 text-xl font-semibold">Your invitations</h2>
+            <div className="flex flex-col gap-3">
+              {invites.map((i) => (
+                <div
+                  key={i.id}
+                  className="paper-card flex flex-wrap items-center justify-between gap-4 p-5"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {i.workspaceName ||
+                        i.workspace?.name ||
+                        "Workspace invitation"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Invited by {i.inviterName || "a teammate"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => act(`/api/invites/${i.id}/accept`)}
+                      className="rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => act(`/api/invites/${i.id}/decline`)}
+                      className="rounded-full border px-4 py-2 text-sm"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+      {modal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
+        >
+          <div className="paper-card w-full max-w-md p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">
+                {modal === "create" ? "Create a workspace" : "Join a workspace"}
+              </h2>
+              <button
+                onClick={() => setModal(null)}
+                aria-label="Close"
+                className="text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            {modal === "create" ? (
+              <>
+                <label className="mt-6 flex flex-col gap-2 text-sm font-medium">
+                  Workspace name
+                  <input
+                    autoFocus
+                    className="auth-input"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Acme, Inc."
+                  />
+                </label>
+                <button
+                  disabled={!name || loading}
+                  onClick={() => act("/api/workspace", { name })}
+                  className="mt-6 min-h-12 w-full rounded-full bg-primary text-primary-foreground disabled:opacity-50"
+                >
+                  {loading ? "Creating…" : "Create workspace"}
+                </button>
+              </>
+            ) : (
+              <div className="mt-6">
+                <p className="leading-6 text-muted-foreground">
+                  {invites.length
+                    ? "Choose an invitation above to join your team."
+                    : "No invites yet — ask a teammate to invite you, or create your own workspace."}
+                </p>
+                <button
+                  onClick={() => setModal(null)}
+                  className="mt-6 min-h-12 w-full rounded-full border"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+            {error && (
+              <p role="alert" className="mt-4 text-sm text-destructive">
+                {error}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
