@@ -19,7 +19,7 @@ export async function GET() {
 
   try {
     const backendRes = await fetch(
-      `${process.env.API_URL}/api/v1/auth/me`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/me`,
       {
         method: "GET",
         headers: {

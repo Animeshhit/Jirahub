@@ -18,7 +18,7 @@ export async function getCurrentUser(): Promise<User | null> {
 
   try {
     const response = await fetch(
-      `${process.env.API_URL}/api/v1/auth/me`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/me`,
       {
         method: "GET",
         headers: {
@@ -35,7 +35,7 @@ export async function getCurrentUser(): Promise<User | null> {
 
     const data = await response.json();
 
-    
+
 
     return data.user ?? null;
   } catch (error) {
