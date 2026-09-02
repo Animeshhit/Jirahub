@@ -23,7 +23,7 @@ export default function Page() {
           more.
         </p>
         <Link
-          href="/register"
+          href="/auth/register"
           className="mt-10 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground"
         >
           Create your account
