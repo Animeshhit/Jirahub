@@ -1,24 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Bell,
-  Check,
-  ChevronDown,
-  CircleHelp,
-  FileText,
-  FolderKanban,
-  Inbox,
-  LayoutDashboard,
-  ListTodo,
-  Menu,
-  Plus,
-  Search,
-  Settings,
-  Sparkles,
-  Users,
-  X,
-} from "lucide-react";
+import { Plus, Users, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,126 +14,16 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-type Task = { id: number; title: string; status: string; assignee: string };
-type Board = {
-  id: number;
-  name: string;
-  description: string;
-  color: "blue" | "purple" | "orange" | "teal";
-  tasks: Task[];
-};
-
-const initialBoards: Board[] = [
-  {
-    id: 1,
-    name: "Website redesign",
-    description: "Plan and ship the new marketing site",
-    color: "blue",
-    tasks: [
-      {
-        id: 1,
-        title: "Collect inspiration references",
-        status: "In progress",
-        assignee: "AM",
-      },
-      {
-        id: 2,
-        title: "Review homepage wireframes",
-        status: "To do",
-        assignee: "JL",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Mobile app",
-    description: "Shape the next generation of the product",
-    color: "purple",
-    tasks: [
-      {
-        id: 3,
-        title: "Map onboarding journey",
-        status: "To do",
-        assignee: "SK",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Brand studio",
-    description: "A shared space for brand explorations",
-    color: "orange",
-    tasks: [],
-  },
-];
-const nav = [
-  { label: "Overview", icon: LayoutDashboard },
-  { label: "My tasks", icon: ListTodo },
-  { label: "Inbox", icon: Inbox, count: 3 },
-];
-const colorClasses = {
-  blue: "bg-sky-400",
-  purple: "bg-purple-300",
-  orange: "bg-orange-500",
-  teal: "bg-teal-500",
-};
-const coverClasses = {
-  blue: "bg-sky-100",
-  purple: "bg-purple-100",
-  orange: "bg-orange-100",
-  teal: "bg-teal-100",
-};
 
 export default function Page() {
   const [workspace, setWorkspace] = useState<string | null>(null);
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [name, setName] = useState("");
   const [invite, setInvite] = useState("");
-  const [boards, setBoards] = useState(initialBoards);
-  const [active, setActive] = useState("Overview");
-  const [selected, setSelected] = useState(1);
-  const [modal, setModal] = useState<"board" | "task" | null>(null);
-  const [boardName, setBoardName] = useState("");
-  const [taskTitle, setTaskTitle] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    return (
-      <Onboarding
-        mode={mode}
-        setMode={setMode}
-        name={name}
-        setName={setName}
-        invite={invite}
-        setInvite={setInvite}
-        onComplete={setWorkspace}
-      />
-    );
-
-
-}
-
-
-
-function Onboarding({
-  mode,
-  setMode,
-  name,
-  setName,
-  invite,
-  setInvite,
-  onComplete,
-}: any) {
   const submit = () => {
     const value = mode === "create" ? name.trim() : invite.trim();
-    if (value) onComplete(mode === "create" ? value : "Northstar Studio");
+
   };
   const description =
     mode === "choose"
@@ -290,7 +163,10 @@ function Onboarding({
                       : "e.g. SPR-4829"
                   }
                 />
-                <Button className="mt-2 cursor-pointer w-full rounded-full" onClick={submit}>
+                <Button
+                  className="mt-2 cursor-pointer w-full rounded-full"
+                  onClick={submit}
+                >
                   {mode === "create" ? "Create workspace" : "Join workspace"}{" "}
                   <span>→</span>
                 </Button>
@@ -302,3 +178,4 @@ function Onboarding({
     </main>
   );
 }
+
