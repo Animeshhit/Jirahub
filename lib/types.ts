@@ -13,3 +13,16 @@ export type Invite = {
   email?: string;
 };
 export type ApiResult<T> = { data?: T; error?: string; status: number };
+
+export type WorkspaceMember = {
+  id: string;
+  name: string;
+  email: string;
+  isAdmin: boolean;
+  joinedOn?: string;
+};
+
+export type WorkspaceDetail = {
+  workspace: Workspace & { createdBy: string; createdOn?: string };
+  members: WorkspaceMember[];
+};

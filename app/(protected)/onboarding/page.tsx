@@ -14,15 +14,42 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const [workspace, setWorkspace] = useState<string | null>(null);
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
+  const [loading,setLoading] = useState(false);
   const [name, setName] = useState("");
   const [invite, setInvite] = useState("");
+  const router = useRouter();
 
-  const submit = () => {
+  const submit = async () => {
+    setLoading(true);
     const value = mode === "create" ? name.trim() : invite.trim();
+    let url = mode == "create" ? "/api/workspaces/create" : "/api/workspaces/join";
+
+    let response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        mode === "create"
+          ? { name: value }
+          : { inviteCode: value }
+      ),
+    });
+
+    let data = await response.json();
+
+    if (data.success) {
+      // setWorkspace(data.workspace?.id || null);
+      router.replace(`/dashboard/${data.workspace?.id}`);
+    } else {
+      alert(data.message || "An error occurred");
+    }
+
+    setLoading(false);  
 
   };
   const description =
@@ -164,6 +191,7 @@ export default function Page() {
                   }
                 />
                 <Button
+                  disabled={loading}
                   className="mt-2 cursor-pointer w-full rounded-full"
                   onClick={submit}
                 >
