@@ -2,7 +2,9 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import {
+  deleteAuthCookies,
   setAccessTokenCookie,
+  setRefreshTokenCookie,
 } from "@/lib/auth/cookies";
 
 export async function POST() {
@@ -12,13 +14,16 @@ export async function POST() {
     cookieStore.get("refreshToken")?.value;
 
   if (!refreshToken) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         authenticated: false,
         message: "Refresh token missing",
       },
       { status: 401 }
     );
+
+    deleteAuthCookies(response);
+    return response;
   }
 
   try {
@@ -37,7 +42,7 @@ export async function POST() {
       await backendRes.json().catch(() => ({}));
 
     if (!backendRes.ok) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           authenticated: false,
           message:
@@ -47,12 +52,15 @@ export async function POST() {
           status: backendRes.status,
         }
       );
+
+      deleteAuthCookies(response);
+      return response;
     }
 
-    const { accessToken } = data;
+    const { accessToken, refreshToken: nextRefreshToken } = data;
 
     if (!accessToken) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           authenticated: false,
           message:
@@ -60,25 +68,21 @@ export async function POST() {
         },
         { status: 500 }
       );
+
+      deleteAuthCookies(response);
+      return response;
     }
 
     const response = NextResponse.json({
       authenticated: true,
     });
 
-    /*
-     * Store new access token.
-     */
-    setAccessTokenCookie(
-      response,
-      accessToken
-    );
+    setAccessTokenCookie(response, accessToken);
 
-    /*
-     * Backend rotates refreshToken.
-     *
-     * Forward every Set-Cookie header.
-     */
+    if (nextRefreshToken) {
+      setRefreshTokenCookie(response, nextRefreshToken);
+    }
+
     const setCookies =
       backendRes.headers.getSetCookie?.() ?? [];
 
@@ -96,12 +100,15 @@ export async function POST() {
       error
     );
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         authenticated: false,
         message: "Internal server error",
       },
       { status: 500 }
     );
+
+    deleteAuthCookies(response);
+    return response;
   }
 }

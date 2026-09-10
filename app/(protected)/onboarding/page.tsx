@@ -15,18 +15,35 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+
+interface Workspace {
+  _id: number;
+  id: string;
+  name: string;
+  createdBy: string;
+  createdOn: string;
+  profileImage: string;
+}
 
 export default function Page() {
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
-  const [loading,setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [invite, setInvite] = useState("");
   const router = useRouter();
 
+  const { data, error, isLoading } = useSWR("/api/workspaces/get", (url) =>
+    fetch(url).then((res) => res.json()),
+  );
+
+  const workspaces: Workspace[] = data?.success ? data.workspaces : [];
+
   const submit = async () => {
     setLoading(true);
     const value = mode === "create" ? name.trim() : invite.trim();
-    let url = mode == "create" ? "/api/workspaces/create" : "/api/workspaces/join";
+    let url =
+      mode == "create" ? "/api/workspaces/create" : "/api/workspaces/join";
 
     let response = await fetch(url, {
       method: "POST",
@@ -34,30 +51,47 @@ export default function Page() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(
-        mode === "create"
-          ? { name: value }
-          : { inviteCode: value }
+        mode === "create" ? { name: value } : { inviteCode: value },
       ),
     });
 
     let data = await response.json();
 
     if (data.success) {
-      // setWorkspace(data.workspace?.id || null);
       router.replace(`/dashboard/${data.workspace?.id}`);
     } else {
       alert(data.message || "An error occurred");
     }
 
-    setLoading(false);  
-
+    setLoading(false);
   };
+
+  const openWorkspace = (id: string) => {
+    router.push(`/dashboard/${id}`);
+  };
+
   const description =
     mode === "choose"
-      ? "Choose how you'd like to use Jirahub."
+      ? workspaces.length > 0
+        ? "Pick a workspace or start something new."
+        : "Choose how you'd like to use Jirahub."
       : mode === "create"
         ? "This is where your team will plan, create, and ship."
         : "Enter the invite code your teammate sent you.";
+
+  // simple deterministic color per workspace, based on name
+  const colors = [
+    "bg-sky-100 text-sky-900",
+    "bg-orange-100 text-orange-900",
+    "bg-purple-100 text-purple-900",
+    "bg-emerald-100 text-emerald-900",
+    "bg-rose-100 text-rose-900",
+  ];
+  const colorFor = (id: string) => {
+    const sum = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return colors[sum % colors.length];
+  };
+
   return (
     <main className="min-h-screen bg-card">
       <header className="flex h-16 items-center justify-between px-5 md:px-12">
@@ -122,6 +156,49 @@ export default function Page() {
           <CardContent className="flex flex-col gap-3">
             {mode === "choose" ? (
               <>
+                {isLoading && (
+                  <div className="flex flex-col gap-2">
+                    <div className="h-14 animate-pulse rounded-lg bg-zinc-200" />
+                    <div className="h-14 animate-pulse rounded-lg bg-zinc-200" />
+                  </div>
+                )}
+
+                {!isLoading && workspaces.length > 0 && (
+                  <div className="flex flex-col gap-2 mb-2">
+                    {workspaces.map((ws) => (
+                      <button
+                        key={ws.id}
+                        onClick={() => openWorkspace(ws.id)}
+                        className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-gray-50 cursor-pointer"
+                      >
+                        {ws.profileImage ? (
+                          <img
+                            src={ws.profileImage}
+                            alt={ws.name}
+                            className="size-9 shrink-0 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <span
+                            className={`grid size-9 shrink-0 place-items-center rounded-lg font-semibold ${colorFor(
+                              ws.id,
+                            )}`}
+                          >
+                            {ws.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <strong className="block truncate">{ws.name}</strong>
+                          <small className="text-muted-foreground">
+                            Created{" "}
+                            {new Date(ws.createdOn).toLocaleDateString()}
+                          </small>
+                        </span>
+                        <span className="text-muted-foreground">→</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <Button
                   variant="outline"
                   className="h-auto justify-start gap-3 p-4 text-left hover:bg-gray-200 cursor-pointer"
@@ -206,4 +283,3 @@ export default function Page() {
     </main>
   );
 }
-

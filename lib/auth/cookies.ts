@@ -11,6 +11,14 @@ export const accessTokenCookieOptions = {
   maxAge: 15 * 60,
 };
 
+export const refreshTokenCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60,
+};
+
 export function setAccessTokenCookie(
   response: NextResponse,
   accessToken: string
@@ -19,6 +27,17 @@ export function setAccessTokenCookie(
     ACCESS_TOKEN_COOKIE,
     accessToken,
     accessTokenCookieOptions
+  );
+}
+
+export function setRefreshTokenCookie(
+  response: NextResponse,
+  refreshToken: string
+) {
+  response.cookies.set(
+    REFRESH_TOKEN_COOKIE,
+    refreshToken,
+    refreshTokenCookieOptions
   );
 }
 

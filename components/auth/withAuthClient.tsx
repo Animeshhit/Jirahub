@@ -37,7 +37,7 @@ export function withAuthClient<
            * accessToken → /me
            */
           let response = await fetch(
-            "/api/v1/auth/me",
+            "/api/auth/me",
             {
               method: "GET",
               credentials: "include",
@@ -54,7 +54,7 @@ export function withAuthClient<
              */
             const refreshResponse =
               await fetch(
-                "/api/v1/auth/refresh",
+                "/api/auth/refresh",
                 {
                   method: "POST",
                   credentials: "include",
@@ -65,7 +65,7 @@ export function withAuthClient<
              * Refresh token invalid/expired.
              */
             if (!refreshResponse.ok) {
-              router.replace("/auht/login");
+              router.replace("/auth/login");
               return;
             }
 
@@ -73,7 +73,7 @@ export function withAuthClient<
              * Retry /me using new access token.
              */
             response = await fetch(
-              "/api/v1/auth/me",
+              "/api/auth/me",
               {
                 method: "GET",
                 credentials: "include",

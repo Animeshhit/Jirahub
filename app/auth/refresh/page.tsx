@@ -19,7 +19,7 @@ export default function RefreshPage() {
       try {
         const response =
           await fetch(
-            "/api/v1/auth/refresh",
+            "/api/auth/refresh",
             {
               method: "POST",
               credentials: "include",

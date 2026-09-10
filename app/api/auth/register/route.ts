@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   setAccessTokenCookie,
+  setRefreshTokenCookie,
 } from "@/lib/auth/cookies";
 
 export async function POST(request: Request) {
@@ -31,10 +32,12 @@ export async function POST(request: Request) {
 
   const {
     accessToken,
+    refreshToken,
     user,
     message,
   } = data as {
-    accessToken: string;
+    accessToken?: string;
+    refreshToken?: string;
     user: unknown;
     message: string;
   };
@@ -59,10 +62,11 @@ export async function POST(request: Request) {
     }
   );
 
-  setAccessTokenCookie(
-    response,
-    accessToken
-  );
+  setAccessTokenCookie(response, accessToken);
+
+  if (refreshToken) {
+    setRefreshTokenCookie(response, refreshToken);
+  }
 
   const setCookies =
     backendRes.headers.getSetCookie?.() ?? [];
